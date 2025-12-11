@@ -1,17 +1,15 @@
 package lix.client;
 
-import haxe.Timer;
-import lix.client.uncompress.*;
 import js.node.Buffer;
-import js.node.Url;
 import js.node.Http;
-import js.Node.*;
-import js.node.stream.Readable.IReadable;
+import js.node.Url;
 import js.node.http.ClientRequest;
 import js.node.http.IncomingMessage;
+import js.node.stream.Readable.IReadable;
+import lix.client.uncompress.*;
 
-using tink.CoreApi;
 using StringTools;
+using tink.CoreApi;
 
 typedef Directory = String;
 
@@ -324,5 +322,5 @@ class Download {
         });
     });
 
-  static public var USER_AGENT = 'switchx';
+  static public var USER_AGENT = 'lix';
 }
