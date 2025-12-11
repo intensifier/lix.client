@@ -3,7 +3,7 @@ package lix.client.sources;
 import tink.url.Auth;
 import tink.url.Path;
 
-@:tink class GitHub {
+class GitHub {
 
   static function isArchive(p:Path)
     return switch p.parts() {

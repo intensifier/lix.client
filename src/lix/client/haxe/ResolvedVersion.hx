@@ -17,5 +17,5 @@ abstract ResolvedVersion(ResolvedUserVersionData) from ResolvedUserVersionData t
       }
   
   public function toString():String    
-    return (this : UserVersion).toString();
+    return (cast this : UserVersion).toString();
 }
