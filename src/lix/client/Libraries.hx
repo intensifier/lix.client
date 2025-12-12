@@ -25,7 +25,7 @@ class Libraries {
     this.force = force;
   }
 
-  public function downloadUrl(url:Url, ?options)
+  public function downloadUrl(url:Url, ?options) 
     return downloadArchive(urlToJob(url), options);
 
   public function downloadArchive(a:Promise<ArchiveJob>, ?options:{ ?into:String }):Promise<DownloadedArchive>

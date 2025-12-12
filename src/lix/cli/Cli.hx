@@ -1,8 +1,6 @@
 package lix.cli;
 
-import haxeshim.scope.Scope;
 import haxeshim.sys.*;
-import haxeshim.cli.*;
 import haxe.DynamicAccess;
 import lix.client.Archives;
 import lix.client.sources.*;

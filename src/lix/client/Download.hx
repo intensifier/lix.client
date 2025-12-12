@@ -1,15 +1,12 @@
 package lix.client;
 
+import js.node.url.URL;
 import js.node.Buffer;
 import js.node.Http;
-import js.node.Url;
 import js.node.http.ClientRequest;
 import js.node.http.IncomingMessage;
 import js.node.stream.Readable.IReadable;
 import lix.client.uncompress.*;
-
-using StringTools;
-using tink.CoreApi;
 
 typedef Directory = String;
 
@@ -280,13 +277,18 @@ class Download {
   static function download<T>(url:String, handler:Handler<T>):Promise<T>
     return Future.async(function (cb) {
 
-      var options:HttpRequestOptions = {
-        var u = new js.node.url.URL(url);
-        {
+      var options = {
+        var u = new URL(url);
+        var ret:HttpRequestOptions = {
           protocol: u.protocol,
           host: u.host,
           path: '${u.pathname}${u.search ?? ""}',
         }
+
+        if (u.username != null && u.password != null) 
+          ret.auth = u.username + ':' + u.password;
+
+        ret;
       };
 
       options.agent = false;
@@ -320,11 +322,7 @@ class Download {
               });
             case v:
 
-              download(switch Url.parse(v) {
-                case { protocol: null }:
-                  options.protocol + '//' + options.host + v;
-                default: v;
-              }, handler).handle(cb);
+              download(new URL(v, url).toString(), handler).handle(cb);
           }
         });
     });

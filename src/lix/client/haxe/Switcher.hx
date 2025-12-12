@@ -1,6 +1,5 @@
 package lix.client.haxe;
 
-import haxeshim.scope.NekoInstallation;
 using lix.client.haxe.ResolvedVersion;
 using lix.client.haxe.UserVersion;
 
@@ -25,24 +24,20 @@ class Switcher {
   }
 
   static var VERSION_INFO = 'version.json';
-  static var NIGHTLIES = 'https://build.haxe.org/builds/haxe';
-  static var PLATFORM =
-    switch [Sys.systemName(), js.Node.process.arch] {
-      case ['Windows', _]: 'windows';
-      case ['Mac', _]: 'mac';
-      case [_, 'arm64']: 'linux-arm64';
-      case _: 'linux64';
+
+  static function nightlies() 
+    return 'https://build.haxe.org/builds/haxe/' + switch Os.platform {
+      case Linux64: 'linux64';
+      case LinuxArm64: 'linux-arm64';
+      case Win64:'windows64';
+      case Mac64 | MacArm | MacUniversal: 'mac';
+      case v: v;
     }
 
   static function linkToNightly(hash:String, date:Date, ?file:String) {
-    if (file == null) {
-      var extension =
-        // Windows builds are distributed as a zip file since 2017-05-11
-        if (PLATFORM == 'windows' && date.getTime() > 1494460800000) 'zip'
-        else 'tar.gz';
-      file = date.format('haxe_%Y-%m-%d_development_$hash.$extension');
-    }
-    return date.format('$NIGHTLIES/$PLATFORM/$file');
+    if (file == null) 
+      file = date.format('haxe_%Y-%m-%d_development_$hash.tar.gz');
+    return date.format('${nightlies()}/$file');
   }
 
   static function sortedOfficial(kind:PickOfficial, versions:Array<Official>):Iterable<Official> {
@@ -65,7 +60,7 @@ class Switcher {
 
 
   static public function nightliesOnline():Promise<Iterable<Nightly>> {
-    return Download.text('$NIGHTLIES/$PLATFORM/').next(function (s:String):Iterable<Nightly> {
+    return Promise.lift(nightlies()).next(Download.text).next(function (s:String):Iterable<Nightly> {
       var lines = s.split('------------------\n').pop().split('\n'),
           ret = new Array<Nightly>();
 
@@ -188,31 +183,10 @@ class Switcher {
     return
       'https://haxe.org/website-content/downloads/$version/downloads/haxe-$version-' + switch Sys.systemName() {
         case 'Windows':
-          var arch = '';
-          // #if nodejs
-          //   if (js.node.Os.arch().contains('64')) arch = '64';
-          // #elseif sys
-          //   if (version > "3.4.3" && version != "4.0.0-preview.1") {
-          //     var wmic = new sys.io.Process('WMIC OS GET osarchitecture /value');
-          //     try
-          //       switch wmic.stdout.readAll().toString() {
-          //         case v if (v.indexOf('64') >= 0):
-          //           arch = '64';
-          //         case _:
-          //       }
-          //     catch(_:Any) {}
-          //     wmic.close();
-          //   }
-          // #else
-          //   #error
-          // #end
-          'win$arch.zip';
+          'win${if (version < "5") '' else '64'}.zip';
         case 'Mac': 'osx.tar.gz';
         default:
-          if (version < "3")
-            'linux.tar.gz';
-          else
-            'linux64.tar.gz';
+          'linux${if (version < "3") '' else '64'}.tar.gz';
       }
 
   function replace(target:String, replacement:String, archiveAs:String, ?beforeReplace) {
