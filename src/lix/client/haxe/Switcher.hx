@@ -1,5 +1,6 @@
 package lix.client.haxe;
 
+import haxeshim.scope.NekoInstallation;
 using lix.client.haxe.ResolvedVersion;
 using lix.client.haxe.UserVersion;
 
@@ -10,7 +11,7 @@ enum PickOfficial {
 
 class Switcher {
 
-  public var scope(default, null):haxeshim.Scope;
+  public var scope(default, null):haxeshim.scope.Scope;
   public var logger(default, null):Logger;
   var downloads:String;
 
@@ -309,30 +310,41 @@ class Switcher {
     }
   }
 
-  static public function ensureNeko(logger:Logger):Promise<String> {
-
-    var neko = Neko.PATH;
+  static public function ensureNeko(neko:NekoInstallation, logger:Logger):Promise<String> {
+    var path = neko.path;
 
     return
-      if (neko.exists())
-        neko;
+      if (path.exists())
+        path;
       else {
-
         logger.info('Neko seems to be missing. Attempting download ...');
 
-        var getUrl = (platformArchive:String)->'https://github.com/HaxeFoundation/neko/releases/download/v2-4-0/neko-2.4.0-${platformArchive}';
-        var downloadArchive:(peel:Int, into:String, logger:Logger)->Promise<Download.Directory> = switch [Sys.systemName(), js.Node.process.arch] {
-          case ['Windows', _]: Download.zip.bind(getUrl('win.zip'));
-          case ['Mac', _]: Download.tar.bind(getUrl('osx-universal.tar.gz'));
-          case [_, 'arm64']: Download.tar.bind(getUrl('linux-arm64.tar.gz'));
-          default: Download.tar.bind(getUrl('linux64.tar.gz'));
-        }
+        switch getNekoUrl(neko) {
+          case Success(url):
+            final download = if (neko.platform.isWindows) Download.zip else Download.tar;
 
-        downloadArchive(1, neko, logger).next(function (x) {
-          logger.success('done');
-          return x;
-        });
+            download(url, 1, path, logger).next(function (x) {
+              logger.success('done');
+              return x;
+            });
+
+          case Failure(e):
+            e;
+        }
       }
+  }
+
+  static public function getNekoUrl(neko:NekoInstallation) {
+    final archive = switch neko.platform {
+      case Linux64: 'linux64';
+      case LinuxArm64: 'linux-arm64';
+      case Win32: 'win';
+      case Win64: 'win64';
+      case Mac64 | MacArm | MacUniversal: 'osx-universal';// wonder if this always works
+      case v:
+        return Failure(new Error('Unsupported platform: $v'));
+    }
+    return Success('https://github.com/HaxeFoundation/neko/releases/download/v${neko.version.replace('.', '-')}/neko-${neko.version}-${archive}.${if (neko.platform.isWindows) 'zip' else 'tar.gz'}');
   }
 
 }

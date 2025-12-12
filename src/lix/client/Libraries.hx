@@ -1,7 +1,7 @@
 package lix.client;
 
-import haxe.DynamicAccess;
-import haxeshim.Scope.*;
+import haxeshim.scope.Scope.*;
+import haxeshim.sys.Exec;
 import lix.api.Api;
 import lix.client.Archives;
 
@@ -206,7 +206,7 @@ class Libraries {
             Exec.shell(
               cmd,
               scope.interpolate(cwd),
-              scope.haxeInstallation.env()
+              scope.haxeInstallation.env
             ).map(_ -> Noise);
           }
           else

@@ -1,8 +1,7 @@
 package lix.client;
 
-using haxe.io.Path;
+import haxeshim.scope.Scope;
 
-using sys.FileSystem;
 using sys.io.File;
 using haxe.Json;
 

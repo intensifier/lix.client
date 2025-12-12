@@ -280,7 +280,14 @@ class Download {
   static function download<T>(url:String, handler:Handler<T>):Promise<T>
     return Future.async(function (cb) {
 
-      var options:HttpRequestOptions = cast Url.parse(url);
+      var options:HttpRequestOptions = {
+        var u = new js.node.url.URL(url);
+        {
+          protocol: u.protocol,
+          host: u.host,
+          path: '${u.pathname}${u.search ?? ""}',
+        }
+      };
 
       options.agent = false;
       if (options.headers == null)
