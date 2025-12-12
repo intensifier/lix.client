@@ -118,7 +118,7 @@ class Switcher {
       else scope.reconfigure({
         version: version.id,
         resolveLibs: scope.config.resolveLibs,
-      });
+      }).next(_ -> ensureNeko(scope.haxeInstallation.neko, logger));
 
   public function resolveInstalled(version:UserVersion):Promise<ResolvedVersion>
     return resolve(version, officialInstalled, nightliesInstalled);
